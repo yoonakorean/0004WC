@@ -155,10 +155,10 @@
 
           if (choice === correctAnswer) {
             correct++;
-            feedback.textContent = `✅ 正確！韓文：${korean}，中文：${chinese}`;
+            feedback.textContent = `✅ 正確！中文：${chinese}`;
             feedback.style.color = "green";
           } else {
-            feedback.textContent = `❌ 錯誤。正確答案是 "${correctAnswer}"（韓文：${korean}，中文：${chinese}）`;
+            feedback.textContent = `❌ 錯誤。正確答案是 "${correctAnswer}"（中文：${chinese}）`;
             feedback.style.color = "red";
           }
 
@@ -207,7 +207,7 @@
         submitBtn.disabled = false;
         submitBtn.style.opacity = "1";
       } else {
-        passFailText.textContent = "❌ 成績不合格";
+        passFailText.textContent = "❌ 成績不合格，請重新測驗";
         submitBtn.disabled = true;
         submitBtn.style.opacity = "0.5";
       }
