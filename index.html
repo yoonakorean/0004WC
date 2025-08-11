@@ -24,6 +24,11 @@
     }
     #question-number {
       font-size: 18px;
+      margin-bottom: 10px;
+    }
+    #timer {
+      font-size: 18px;
+      color: #c00;
       margin-bottom: 20px;
     }
     button {
@@ -57,14 +62,20 @@
       color: #888;
       margin: 2px 0;
     }
+    #feedback {
+      margin-top: 10px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
   <img src="logo.png" alt="Logo" id="logo" />
   <div id="game-title">0-4 單字聽力測驗</div>
   <p id="question-number">第 1 題 / 共 12 題</p>
+  <p id="timer">剩餘時間：-- 秒</p>
   <audio id="audio" controls></audio>
   <div id="choices"></div>
+  <div id="feedback"></div>
   <button id="next-btn" disabled>下一題</button>
 
   <div id="result" class="hidden">
@@ -84,31 +95,50 @@
     const gameTitle = "0-4 單字聽力測驗";
 
     const questions = [
-      { word: "가루", audio: "audio/000401W.mp3", choices: ["가루", "가로", "가류"] },
-      { word: "고모", audio: "audio/000402W.mp3", choices: ["고모", "코모", "고무"] },
-      { word: "요가", audio: "audio/000403W.mp3", choices: ["요가", "유가", "요고"] },
-      { word: "고구마", audio: "audio/000404W.mp3", choices: ["고구마", "고무마", "고고마"] },
-      { word: "카드", audio: "audio/000405W.mp3", choices: ["卡드", "가드", "카르"] },
-      { word: "마이크", audio: "audio/000406W.mp3", choices: ["마이크", "마이쿠", "매이크"] },
-      { word: "쿠키", audio: "audio/000407W.mp3", choices: ["쿠키", "코키", "쿠기"] },
-      { word: "코", audio: "audio/000408W.mp3", choices: ["코", "쿠", "고"] },
-      { word: "꼬리", audio: "audio/000409W.mp3", choices: ["꼬리", "고리", "코리"] },
-      { word: "두꺼비", audio: "audio/000410W.mp3", choices: ["두꺼비", "두커비", "두꼬미"] },
-      { word: "코끼리", audio: "audio/000411W.mp3", choices: ["코끼리", "고끼리", "코키리"] },
-      { word: "꼬마", audio: "audio/000412W.mp3", choices: ["꼬마", "고마", "코마"] }
+      { word: "가루", korean: "粉", audio: "audio/000401W.mp3", choices: ["가루", "가로", "가류"] },
+      { word: "고모", korean: "姑姑", audio: "audio/000402W.mp3", choices: ["고모", "코모", "고무"] },
+      { word: "요가", korean: "瑜珈", audio: "audio/000403W.mp3", choices: ["요가", "유가", "요고"] },
+      { word: "고구마", korean: "地瓜", audio: "audio/000404W.mp3", choices: ["고구마", "고무마", "고고마"] },
+      { word: "카드", korean: "卡片", audio: "audio/000405W.mp3", choices: ["가드", "가드", "카르"] },
+      { word: "마이크", korean: "麥克風", audio: "audio/000406W.mp3", choices: ["마이크", "마이쿠", "매이크"] },
+      { word: "쿠키", korean: "餅乾", audio: "audio/000407W.mp3", choices: ["쿠키", "코키", "쿠기"] },
+      { word: "코", korean: "鼻子", audio: "audio/000408W.mp3", choices: ["코", "쿠", "고"] },
+      { word: "꼬리", korean: "尾巴", audio: "audio/000409W.mp3", choices: ["꼬리", "고리", "코리"] },
+      { word: "두꺼비", korean: "癩蛤蟆", audio: "audio/000410W.mp3", choices: ["두꺼비", "두커비", "두꼬미"] },
+      { word: "코끼리", korean: "大象", audio: "audio/000411W.mp3", choices: ["코끼리", "고끼리", "코키리"] },
+      { word: "꼬마", korean: "小不點", audio: "audio/000412W.mp3", choices: ["꼬마", "고마", "코마"] }
     ];
 
     let shuffledQuestions = [...questions].sort(() => 0.5 - Math.random());
     let current = 0;
     let correct = 0;
+    let timerId;
+    const totalSeconds = shuffledQuestions.length * 8;
+    let timeLeft = totalSeconds;
 
     const audio = document.getElementById("audio");
     const choicesDiv = document.getElementById("choices");
+    const feedback = document.getElementById("feedback");
     const nextBtn = document.getElementById("next-btn");
     const questionNum = document.getElementById("question-number");
+    const timerDisplay = document.getElementById("timer");
+
+    function startTimer() {
+      timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
+      timerId = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
+        if (timeLeft <= 0) {
+          clearInterval(timerId);
+          alert("⏰ 時間到！系統將自動交卷");
+          showResult();
+        }
+      }, 1000);
+    }
 
     function loadQuestion() {
       nextBtn.disabled = true;
+      feedback.textContent = "";
       questionNum.textContent = `第 ${current + 1} 題 / 共 ${shuffledQuestions.length} 題`;
       const q = shuffledQuestions[current];
       audio.src = q.audio;
@@ -119,14 +149,27 @@
         btn.textContent = choice;
         btn.className = "choice-btn";
         btn.onclick = () => {
-          if (choice === q.word) correct++;
+          const correctAnswer = q.word;
+          const korean = q.word;
+          const chinese = q.korean;
+
+          if (choice === correctAnswer) {
+            correct++;
+            feedback.textContent = `✅ 正確！韓文：${korean}，中文：${chinese}`;
+            feedback.style.color = "green";
+          } else {
+            feedback.textContent = `❌ 錯誤。正確答案是 "${correctAnswer}"（韓文：${korean}，中文：${chinese}）`;
+            feedback.style.color = "red";
+          }
+
           nextBtn.disabled = false;
+
           document.querySelectorAll(".choice-btn").forEach((b) => {
             b.disabled = true;
-            if (b.textContent === q.word) {
-              b.style.backgroundColor = "#8f8"; // 正確選項
+            if (b.textContent === correctAnswer) {
+              b.style.backgroundColor = "#8f8";
             } else if (b === btn) {
-              b.style.backgroundColor = "#f88"; // 選錯的按鈕
+              b.style.backgroundColor = "#f88";
             }
           });
         };
@@ -139,6 +182,7 @@
       if (current < shuffledQuestions.length) {
         loadQuestion();
       } else {
+        clearInterval(timerId);
         showResult();
       }
     };
@@ -148,6 +192,8 @@
       choicesDiv.classList.add("hidden");
       nextBtn.classList.add("hidden");
       questionNum.classList.add("hidden");
+      feedback.classList.add("hidden");
+      timerDisplay.classList.add("hidden");
       document.getElementById("result").classList.remove("hidden");
 
       const percent = Math.round((correct / shuffledQuestions.length) * 100);
@@ -193,17 +239,17 @@
         method: "POST",
         mode: "no-cors",
         body: formData
-      })
-        .then(() => {
-          const nowText = `${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}時${now.getMinutes()}分${now.getSeconds()}秒 已完成回傳`;
-          document.getElementById("submit-time").textContent = nowText;
-          alert("✅ 提交成功!!可重複測驗");
-        })
-        .catch(() => {
-          alert("❌ 回傳失敗，請稍後再試");
-        });
+      }).then(() => {
+        const nowText = `${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}時${now.getMinutes()}分${now.getSeconds()}秒 已完成回傳`;
+        document.getElementById("submit-time").textContent = nowText;
+        alert("✅ 提交成功!!可重複測驗");
+      }).catch(() => {
+        alert("❌ 回傳失敗，請稍後再試");
+      });
     }
 
+    // 啟動畫面載入
+    startTimer();
     loadQuestion();
   </script>
 </body>
