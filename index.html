@@ -392,7 +392,7 @@
       formData.append("entry.498226528", time);
       formData.append("entry.532888754", weekday);
       formData.append("entry.1110600272", gameTitle);
-      formData.append("entry.1052097214", answerLogText);
+
 
       fetch(formURL, { method: "POST", mode: "no-cors", body: formData })
         .then(() => alert("成績已回傳！可重複挑戰。"))
